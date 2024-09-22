@@ -14,7 +14,6 @@ void get_URL( const string& host, const string& path )
 
   TCPSocket tcpskt;
   tcpskt.connect( Address( host, "http" ) );
-
   tcpskt.write( "GET " + path + " HTTP/1.1\r\n" );
   tcpskt.write( "Host: " + host + "\r\n" );
   tcpskt.write( "Connection: close\r\n" );
