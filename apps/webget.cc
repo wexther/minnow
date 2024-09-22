@@ -12,10 +12,8 @@ void get_URL( const string& host, const string& path )
   cerr << "Function called: get_URL(" << host << ", " << path << ")\n";
   // cerr << "Warning: get_URL() has not been implemented yet.\n";
 
-  Address addr( host, "http" );
-
   TCPSocket tcpskt;
-  tcpskt.connect( addr );
+  tcpskt.connect( Address( host, "http" ) );
 
   tcpskt.write( "GET " + path + " HTTP/1.1\r\n" );
   tcpskt.write( "Host: " + host + "\r\n" );
