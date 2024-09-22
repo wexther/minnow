@@ -27,7 +27,7 @@ protected:
   bool error_ {};
   // my addition
   bool closed_ {};
-  std::string stream_buffer {};
+  std::string stream_buffer_ {};
   uint64_t bytes_pushed_ {};
 };
 

@@ -22,7 +22,7 @@ void Writer::push( string data )
     return;
 
   uint64_t push_lenth = min( data.length(), available_capacity() );
-  stream_buffer.append( data, 0, push_lenth );
+  stream_buffer_.append( data, 0, push_lenth );
   bytes_pushed_ += push_lenth;
 }
 
@@ -37,7 +37,7 @@ uint64_t Writer::available_capacity() const
 {
   // Your code here.
   // return {};
-  return capacity_ - stream_buffer.length();
+  return capacity_ - stream_buffer_.length();
 }
 
 uint64_t Writer::bytes_pushed() const
@@ -58,26 +58,26 @@ uint64_t Reader::bytes_popped() const
 {
   // Your code here.
   // return {};
-  return bytes_pushed_ - stream_buffer.length();
+  return bytes_pushed_ - stream_buffer_.length();
 }
 
 string_view Reader::peek() const
 {
   // Your code here.
   // return {};
-  return string_view( stream_buffer );
+  return string_view( stream_buffer_ );
 }
 
 void Reader::pop( uint64_t len )
 {
   // Your code here.
   // (void)len;
-  stream_buffer.erase( 0, len );
+  stream_buffer_.erase( 0, len );
 }
 
 uint64_t Reader::bytes_buffered() const
 {
   // Your code here.
   // return {};
-  return stream_buffer.length();
+  return stream_buffer_.length();
 }
