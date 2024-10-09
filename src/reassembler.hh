@@ -48,6 +48,5 @@ private:
   uint64_t end_index = -1, bytes_pending_ {};
   std::map<uint64_t, std::string> store_map_ {};
   // Writer &stream_writer_ = output_.writer();
-  void map_merge( std::map<uint64_t, std::string>::iterator& cur,
-                                                       std::map<uint64_t, std::string>::iterator &next );
+  void map_merge( std::map<uint64_t, std::string>::iterator& cur, std::map<uint64_t, std::string>::iterator& next );
 };
