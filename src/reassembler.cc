@@ -55,13 +55,13 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
           map<uint64_t, string>::iterator pre = cur;
           --pre;
           if ( pre->first + pre->second.length() >= first_index )
-            cur = map_merge( pre, cur );
+            map_merge( pre, cur );
         }
       }
       map<uint64_t, string>::iterator next = cur;
       ++next;
       while ( next != store_map_.end() && cur->first + cur->second.length() >= next->first ) {
-        next = map_merge( cur, next );
+        map_merge( cur, next );
         ++next;
       }
     }
@@ -75,8 +75,7 @@ uint64_t Reassembler::bytes_pending() const
   return bytes_pending_;
 }
 
-map<uint64_t, string>::iterator Reassembler::map_merge( map<uint64_t, string>::iterator cur,
-                                                        map<uint64_t, string>::iterator next )
+void Reassembler::map_merge( map<uint64_t, string>::iterator& cur, map<uint64_t, string>::iterator& next )
 {
   uint64_t overlap_lenth = cur->first + cur->second.length() - next->first;
   if ( overlap_lenth < next->second.length() ) {
@@ -86,5 +85,5 @@ map<uint64_t, string>::iterator Reassembler::map_merge( map<uint64_t, string>::i
     bytes_pending_ -= next->second.length();
 
   store_map_.erase( next );
-  return cur;
+  next = cur;
 }
