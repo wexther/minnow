@@ -2,7 +2,7 @@
 
 using namespace std;
 
-// 认为只有一个子串is_last_substring为true且没有任何字符越界
+// 认为有唯一的字符串末且没有任何字符越界
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
 {
   // Your code here.
@@ -14,6 +14,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   if ( is_last_substring )
     end_index = first_index + data.length();
 
+  // 子串可能存在需要处理的信息
   if ( first_index + data.length() >= stream_writer.bytes_pushed()
        && stream_writer.bytes_pushed() + stream_writer.available_capacity() >= first_index ) {
 
@@ -21,9 +22,11 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     if ( data.length() > avaliable_len )
       data.erase( avaliable_len );
 
+    // 直接插入ByteStream
     if ( first_index <= stream_writer.bytes_pushed() ) {
       stream_writer.push( data.erase( 0, stream_writer.bytes_pushed() - first_index ) );
 
+      // 处理后面的字符
       map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
       if ( insert_itr != store_map_.begin() ) {
         --insert_itr;
@@ -36,6 +39,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
       if ( stream_writer.bytes_pushed() == end_index )
         stream_writer.close();
 
+      // 储存
     } else {
       map<uint64_t, string>::iterator cur = store_map_.find( first_index );
       if ( cur != store_map_.end() ) {
