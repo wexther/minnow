@@ -49,5 +49,5 @@ private:
   std::map<uint64_t, std::string> store_map_ {};
 
   std::map<uint64_t, std::string>::iterator map_merge( std::map<uint64_t, std::string>::iterator cur,
-                                                       std::map<uint64_t, std::string>::iterator next ) ;
+                                                       std::map<uint64_t, std::string>::iterator next );
 };
