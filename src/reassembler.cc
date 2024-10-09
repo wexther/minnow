@@ -2,7 +2,7 @@
 
 using namespace std;
 
-// 认为有唯一的字符串末且没有任何字符越界
+// 认为有唯一的字符串末且没有任何字符越界，否则抛出错误
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
 {
   // Your code here.
@@ -25,22 +25,26 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     // 直接插入ByteStream
     if ( first_index <= stream_writer.bytes_pushed() ) {
       stream_writer.push( data.erase( 0, stream_writer.bytes_pushed() - first_index ) );
+      if ( stream_writer.bytes_pushed() > end_index )
+        throw( "Reassmembler Bytes overpush" );
 
-      // 处理后面的字符
-      map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
-      if ( insert_itr != store_map_.begin() ) {
-        --insert_itr;
-        store_map_.erase( store_map_.begin(), insert_itr );
-        stream_writer.push( insert_itr->second.erase( 0, stream_writer.bytes_pushed() - insert_itr->first ) );
-        bytes_pending_ -= stream_writer.bytes_pushed() - insert_itr->first;
-        store_map_.erase( insert_itr );
-      }
-
-      if ( stream_writer.bytes_pushed() == end_index )
+      if ( is_last_substring )
         stream_writer.close();
+      else { // 处理后面的字符
+        map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
+        if ( insert_itr != store_map_.begin() ) {
+          --insert_itr;
+          stream_writer.push( insert_itr->second.erase( 0, stream_writer.bytes_pushed() - insert_itr->first ) );
+          if ( stream_writer.bytes_pushed() == end_index )
+            stream_writer.close();
+          if ( stream_writer.bytes_pushed() > end_index )
+            throw( "Reassmembler Bytes overpush" );
 
-      // 储存
-    } else {
+          bytes_pending_ -= stream_writer.bytes_pushed() - insert_itr->first;
+          store_map_.erase( store_map_.begin(), ++insert_itr );
+        }
+      }
+    } else { // 储存
       map<uint64_t, string>::iterator cur = store_map_.find( first_index );
       if ( cur != store_map_.end() ) {
         if ( data.length() > cur->second.length() ) {
