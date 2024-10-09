@@ -4,7 +4,6 @@ using namespace std;
 
 // 认为只有一个子串is_last_substring为true且没有任何字符越界
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
-
 {
   // Your code here.
   // (void)first_index;
@@ -81,7 +80,7 @@ map<uint64_t, string>::iterator Reassembler::map_merge( map<uint64_t, string>::i
     cur->second.append( next->second, overlap_lenth );
   } else
     bytes_pending_ -= next->second.length();
-    
+
   store_map_.erase( next );
   return cur;
 }
