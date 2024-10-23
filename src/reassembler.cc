@@ -38,7 +38,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
         stream_writer.set_error();
       } else if ( stream_writer.bytes_pushed() == end_index ) {
         stream_writer.close();
-      } else { 
+      } else {
         map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
 
         if ( insert_itr != store_map_.begin() ) {

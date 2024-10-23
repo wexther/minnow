@@ -46,7 +46,7 @@ TCPReceiverMessage TCPReceiver::send() const
   } else {
     message.window_size = reassembler_.writer().available_capacity();
   }
-  
+
   message.RST = RST_flag_ || reassembler_.writer().has_error();
   return message;
 }
