@@ -24,20 +24,21 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   if ( first_index + data.length() >= stream_writer.bytes_pushed()
        && stream_writer.bytes_pushed() + stream_writer.available_capacity() >= first_index ) {
 
-    uint64_t avaliable_len = stream_writer.bytes_pushed() + stream_writer.available_capacity() - first_index;
-    if ( data.length() > avaliable_len ) {
-      data.erase( avaliable_len );
+    uint64_t legal_len = stream_writer.bytes_pushed() + stream_writer.available_capacity() - first_index;
+    if ( data.length() > legal_len ) {
+      data.erase( legal_len );
     }
 
     // 直接插入ByteStream
     if ( first_index <= stream_writer.bytes_pushed() ) {
       stream_writer.push( data.erase( 0, stream_writer.bytes_pushed() - first_index ) );
+
       if ( stream_writer.bytes_pushed() > end_index ) {
         throw runtime_error( "Reassmembler Bytes overpush" );
         stream_writer.set_error();
       } else if ( stream_writer.bytes_pushed() == end_index ) {
         stream_writer.close();
-      } else { // 处理后面的字符
+      } else { 
         map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
 
         if ( insert_itr != store_map_.begin() ) {
