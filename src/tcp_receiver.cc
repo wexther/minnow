@@ -1,7 +1,6 @@
 #include "tcp_receiver.hh"
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
 #include <stdexcept>
 
 using namespace std;
@@ -10,12 +9,14 @@ void TCPReceiver::receive( TCPSenderMessage message )
 {
   // Your code here.
   // (void)message;
-  // cout << message.RST << "rst" << endl;
 
-  if ( RST_flag_ || message.RST || reassembler_.writer().has_error() ) {
+  if ( RST_flag_ ) {
+    return;
+  }
+
+  if ( message.RST ) {
     RST_flag_ = true;
     reassembler_.reader().set_error();
-    // cout << "set1!" << endl;
     return;
   }
 
