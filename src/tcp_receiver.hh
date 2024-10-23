@@ -29,5 +29,4 @@ private:
   Reassembler reassembler_;
   Wrap32 ISN_ { {} };
   bool SYN_flag_ {};
-  bool RST_flag_ {};
 };

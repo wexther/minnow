@@ -18,7 +18,7 @@ void Writer::push( string data )
   // (void)data;
   // return;
 
-  if ( closed_ || error_ ) {
+  if ( closed_ ) {
     return;
   }
 
@@ -79,9 +79,6 @@ void Reader::pop( uint64_t len )
 {
   // Your code here.
   // (void)len;
-  if ( error_ ) {
-    return;
-  }
 
   stream_buffer_.erase( 0, len );
 }

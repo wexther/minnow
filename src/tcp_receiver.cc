@@ -10,12 +10,7 @@ void TCPReceiver::receive( TCPSenderMessage message )
   // Your code here.
   // (void)message;
 
-  if ( RST_flag_ ) {
-    return;
-  }
-
   if ( message.RST ) {
-    RST_flag_ = true;
     reassembler_.reader().set_error();
     return;
   }
@@ -44,6 +39,6 @@ TCPReceiverMessage TCPReceiver::send() const
 
   message.window_size = min( reassembler_.writer().available_capacity(), static_cast<uint64_t> UINT16_MAX );
 
-  message.RST = RST_flag_ || reassembler_.writer().has_error();
+  message.RST = reassembler_.writer().has_error();
   return message;
 }
