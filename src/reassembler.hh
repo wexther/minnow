@@ -1,7 +1,6 @@
 #pragma once
 
 #include "byte_stream.hh"
-#include <iostream>
 #include <map>
 
 class Reassembler
@@ -44,9 +43,8 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
-  // myaddition
-  uint64_t end_index = -1, bytes_pending_ {};
+  // my addition
+  uint64_t end_index = UINT64_MAX, bytes_pending_ {};
   std::map<uint64_t, std::string> store_map_ {};
-  // Writer &stream_writer_ = output_.writer();
   void map_merge( std::map<uint64_t, std::string>::iterator& cur, std::map<uint64_t, std::string>::iterator& next );
 };

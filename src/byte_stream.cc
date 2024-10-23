@@ -18,8 +18,9 @@ void Writer::push( string data )
   // (void)data;
   // return;
 
-  if ( closed_ )
+  if ( closed_ || error_ ) {
     return;
+  }
 
   uint64_t push_lenth = min( data.length(), available_capacity() );
   stream_buffer_.append( data, 0, push_lenth );
@@ -78,6 +79,9 @@ void Reader::pop( uint64_t len )
 {
   // Your code here.
   // (void)len;
+  if ( error_ ) {
+    return;
+  }
 
   stream_buffer_.erase( 0, len );
 }
