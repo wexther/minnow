@@ -41,11 +41,7 @@ TCPReceiverMessage TCPReceiver::send() const
       = Wrap32::wrap( reassembler_.writer().bytes_pushed() + 1 + reassembler_.writer().is_closed(), ISN_ );
   }
 
-  if ( reassembler_.writer().available_capacity() > UINT16_MAX ) {
-    message.window_size = UINT16_MAX;
-  } else {
-    message.window_size = reassembler_.writer().available_capacity();
-  }
+  message.window_size = min( reassembler_.writer().available_capacity(), static_cast<uint64_t> UINT16_MAX );
 
   message.RST = RST_flag_ || reassembler_.writer().has_error();
   return message;

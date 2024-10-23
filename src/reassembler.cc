@@ -21,37 +21,37 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
 
   // 子串可能存在需要处理的信息
-  if ( first_index + data.length() >= stream_writer.bytes_pushed()
-       && stream_writer.bytes_pushed() + stream_writer.available_capacity() >= first_index ) {
+  uint64_t first_unassambled_index = stream_writer.bytes_pushed();
+  uint64_t legal_capacity = first_unassambled_index + stream_writer.available_capacity();
 
-    uint64_t legal_len = stream_writer.bytes_pushed() + stream_writer.available_capacity() - first_index;
-    if ( data.length() > legal_len ) {
-      data.erase( legal_len );
-    }
+  if ( first_index + data.length() >= first_unassambled_index && legal_capacity >= first_index ) {
+    data.erase( min( legal_capacity - first_index, data.length() ) );
 
     // 直接插入ByteStream
-    if ( first_index <= stream_writer.bytes_pushed() ) {
-      stream_writer.push( data.erase( 0, stream_writer.bytes_pushed() - first_index ) );
+    if ( first_index <= first_unassambled_index ) {
+      stream_writer.push( data.erase( 0, first_unassambled_index - first_index ) );
+      first_unassambled_index = stream_writer.bytes_pushed();
 
-      if ( stream_writer.bytes_pushed() > end_index ) {
-        throw runtime_error( "Reassmembler Bytes overpush" );
+      if ( first_unassambled_index > end_index ) {
         stream_writer.set_error();
-      } else if ( stream_writer.bytes_pushed() == end_index ) {
+        throw runtime_error( "Reassmembler Bytes overpush" );
+      } else if ( first_unassambled_index == end_index ) {
         stream_writer.close();
       } else {
-        map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( stream_writer.bytes_pushed() );
+        map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( first_unassambled_index );
 
         if ( insert_itr != store_map_.begin() ) {
           --insert_itr;
 
           bytes_pending_ -= insert_itr->second.length();
-          stream_writer.push( insert_itr->second.erase( 0, stream_writer.bytes_pushed() - insert_itr->first ) );
+          stream_writer.push( insert_itr->second.erase( 0, first_unassambled_index - insert_itr->first ) );
+          first_unassambled_index = stream_writer.bytes_pushed();
 
-          if ( stream_writer.bytes_pushed() == end_index ) {
+          if ( first_unassambled_index == end_index ) {
             stream_writer.close();
-          } else if ( stream_writer.bytes_pushed() > end_index ) {
-            throw runtime_error( "Reassmembler Bytes overpush" );
+          } else if ( first_unassambled_index > end_index ) {
             stream_writer.set_error();
+            throw runtime_error( "Reassmembler Bytes overpush" );
           }
 
           for ( map<uint64_t, string>::iterator it = store_map_.begin(); it != insert_itr; it++ ) {
@@ -99,7 +99,7 @@ uint64_t Reassembler::bytes_pending() const
   return bytes_pending_;
 }
 
-void Reassembler::map_merge( map<uint64_t, string>::iterator& cur, map<uint64_t, string>::iterator& next )
+inline void Reassembler::map_merge( map<uint64_t, string>::iterator& cur, map<uint64_t, string>::iterator& next )
 {
   uint64_t overlap_lenth = cur->first + cur->second.length() - next->first;
   if ( overlap_lenth < next->second.length() ) {
