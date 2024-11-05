@@ -22,18 +22,25 @@ uint64_t TCPSender::consecutive_retransmissions() const
 void TCPSender::push( const TransmitFunction& transmit )
 {
   // Your code here.
-  (void)transmit;
+  // (void)transmit;
 
-  TCPSenderMessage msg;
-  msg.seqno = Wrap32::wrap( next_seq_, isn_ );
-
-  uint16_t msg_length = min( swnd_, static_cast<uint16_t>( TCPConfig::MAX_PAYLOAD_SIZE ) );
-  if ( swnd_ == 0 ) {
-    msg_length = 1;
-  }
-  (void)msg_length;
   Reader& reader = input_.reader();
-  (void)reader;
+  while ( next_seq_ - ackno_ < swnd_ && next_seq_ - ackno_ < reader.bytes_buffered()) {
+    TCPSenderMessage msg;
+    msg.seqno = Wrap32::wrap( next_seq_, isn_ );
+
+    uint16_t msg_length = min( swnd_ - next_seq_ + ackno_, static_cast<uint64_t>( TCPConfig::MAX_PAYLOAD_SIZE ) );
+    if ( swnd_ == 0 ) {
+      msg_length = 1;
+    }
+
+    msg.payload = reader.peek().substr( next_seq_ - ackno_, msg_length );
+    if ( next_seq_ == 0 ) {
+      msg.SYN = true;
+    }
+
+    next_seq_ += msg.sequence_length();
+  }
 }
 
 TCPSenderMessage TCPSender::make_empty_message() const
