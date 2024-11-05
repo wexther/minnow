@@ -44,7 +44,9 @@ public:
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
   // my addition
-  uint64_t end_index { UINT64_MAX }, bytes_pending_ {}, first_unassambled_index_ {};
+  uint64_t end_index { UINT64_MAX };
+  uint64_t bytes_pending_ {};
+  uint64_t first_unassambled_index_ {};
   std::map<uint64_t, std::string> store_map_ {};
   void map_merge( std::map<uint64_t, std::string>::iterator& cur, std::map<uint64_t, std::string>::iterator& next );
 };
