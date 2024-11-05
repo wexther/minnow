@@ -21,35 +21,35 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
 
   // 子串可能存在需要处理的信息
-  uint64_t first_unassambled_index = stream_writer.bytes_pushed();
-  uint64_t legal_capacity = first_unassambled_index + stream_writer.available_capacity();
+  first_unassambled_index_ = stream_writer.bytes_pushed();
+  uint64_t legal_capacity = first_unassambled_index_ + stream_writer.available_capacity();
 
-  if ( first_index + data.length() >= first_unassambled_index && legal_capacity >= first_index ) {
+  if ( first_index + data.length() >= first_unassambled_index_ && legal_capacity >= first_index ) {
     data.erase( min( legal_capacity - first_index, data.length() ) );
 
     // 直接插入ByteStream
-    if ( first_index <= first_unassambled_index ) {
-      stream_writer.push( data.erase( 0, first_unassambled_index - first_index ) );
-      first_unassambled_index = stream_writer.bytes_pushed();
+    if ( first_index <= first_unassambled_index_ ) {
+      stream_writer.push( data.erase( 0, first_unassambled_index_ - first_index ) );
+      first_unassambled_index_ = stream_writer.bytes_pushed();
 
-      if ( first_unassambled_index > end_index ) {
+      if ( first_unassambled_index_ > end_index ) {
         stream_writer.set_error();
         throw runtime_error( "Reassmembler Bytes overpush" );
-      } else if ( first_unassambled_index == end_index ) {
+      } else if ( first_unassambled_index_ == end_index ) {
         stream_writer.close();
       } else {
-        map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( first_unassambled_index );
+        map<uint64_t, string>::iterator insert_itr = store_map_.upper_bound( first_unassambled_index_ );
 
         if ( insert_itr != store_map_.begin() ) {
           --insert_itr;
 
           bytes_pending_ -= insert_itr->second.length();
-          stream_writer.push( insert_itr->second.erase( 0, first_unassambled_index - insert_itr->first ) );
-          first_unassambled_index = stream_writer.bytes_pushed();
+          stream_writer.push( insert_itr->second.erase( 0, first_unassambled_index_ - insert_itr->first ) );
+          first_unassambled_index_ = stream_writer.bytes_pushed();
 
-          if ( first_unassambled_index == end_index ) {
+          if ( first_unassambled_index_ == end_index ) {
             stream_writer.close();
-          } else if ( first_unassambled_index > end_index ) {
+          } else if ( first_unassambled_index_ > end_index ) {
             stream_writer.set_error();
             throw runtime_error( "Reassmembler Bytes overpush" );
           }
