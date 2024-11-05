@@ -11,6 +11,22 @@
 #include <optional>
 #include <queue>
 
+// my addition
+class Timer
+{
+public:
+  void start() { expire_timestamp_ = current_timestamp_ + RTO_ms_; }
+  void stop() { expire_timestamp_ = UINT64_MAX; }
+  void set_RTO( uint64_t RTO_ms ) { RTO_ms_ = RTO_ms; }
+  void double_RTO() { RTO_ms_ *= 2; }
+  bool expire_with_time_goes( uint64_t time_ms );
+
+private:
+  uint64_t RTO_ms_ {};
+  uint64_t current_timestamp_ {};
+  uint64_t expire_timestamp_ { UINT64_MAX };
+};
+
 class TCPSender
 {
 public:
@@ -48,4 +64,7 @@ private:
   ByteStream input_;
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+  // my addition
+  Timer timer_ {};
+  uint64_t ack_no;
 };

@@ -40,3 +40,10 @@ void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& trans
   (void)transmit;
   (void)initial_RTO_ms_;
 }
+
+// my addition
+bool Timer::expire_with_time_goes( uint64_t time_ms )
+{
+  current_timestamp_ += time_ms;
+  return current_timestamp_ > expire_timestamp_;
+}
