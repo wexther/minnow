@@ -6,12 +6,11 @@
 
 #include <cstdint>
 #include <functional>
-#include <list>
+// #include <list>
 #include <map>
-#include <memory>
+// #include <memory>
 #include <optional>
-#include <queue>
-// #include <iostream>
+// #include <queue>
 
 // my addition
 class Timer
@@ -29,7 +28,6 @@ private:
   uint64_t RTO_ms_ {};
   uint64_t current_timestamp_ {};
   uint64_t expire_timestamp_ { UINT64_MAX };
-  // bool is_running_ {};
 };
 
 class TCPSender
@@ -38,9 +36,7 @@ public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( ByteStream&& input, Wrap32 isn, uint64_t initial_RTO_ms )
     : input_( std::move( input ) ), isn_( isn ), initial_RTO_ms_( initial_RTO_ms ), timer_( initial_RTO_ms )
-  {
-    // std::cout << "initial!" << std::endl << std::endl;
-  }
+  {}
 
   /* Generate an empty TCPSenderMessage */
   TCPSenderMessage make_empty_message() const;
@@ -80,5 +76,5 @@ private:
   // std::string tcp_buffer_ {};
   std::map<uint64_t, TCPSenderMessage> tcp_buffer_ {};
   bool FIN_sent {};
-  void send_msg_with( uint16_t msg_length, bool is_resent, uint64_t abs_sqeno, const TransmitFunction& transmit );
+  void send_msg_with( uint16_t msg_length, uint64_t abs_sqeno, const TransmitFunction& transmit );
 };
