@@ -7,25 +7,29 @@
 #include <cstdint>
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <optional>
 #include <queue>
+// #include <iostream>
 
 // my addition
 class Timer
 {
 public:
+  explicit Timer( uint64_t RTO_ms ) : RTO_ms_( RTO_ms ) {}
   void start();
   void stop();
   void set_RTO( uint64_t RTO_ms ) { RTO_ms_ = RTO_ms; }
   void double_RTO() { RTO_ms_ *= 2; }
   bool expire_with_time_goes( uint64_t time_ms );
+  bool is_running() const { return expire_timestamp_ != UINT64_MAX; }
 
 private:
   uint64_t RTO_ms_ {};
   uint64_t current_timestamp_ {};
   uint64_t expire_timestamp_ { UINT64_MAX };
-  bool is_running_ {};
+  // bool is_running_ {};
 };
 
 class TCPSender
@@ -33,8 +37,10 @@ class TCPSender
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( ByteStream&& input, Wrap32 isn, uint64_t initial_RTO_ms )
-    : input_( std::move( input ) ), isn_( isn ), initial_RTO_ms_( initial_RTO_ms )
-  {}
+    : input_( std::move( input ) ), isn_( isn ), initial_RTO_ms_( initial_RTO_ms ), timer_( initial_RTO_ms )
+  {
+    // std::cout << "initial!" << std::endl << std::endl;
+  }
 
   /* Generate an empty TCPSenderMessage */
   TCPSenderMessage make_empty_message() const;
@@ -66,9 +72,13 @@ private:
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
   // my addition
-  Timer timer_ {};
-  uint64_t ackno_ {};
+  Timer timer_;
+  uint64_t acked_no_ {};
   uint64_t next_seq_ {};
-  uint16_t swnd_ {};
+  uint16_t swnd_ { 1 };
   uint64_t consecutive_retransmissions_ {};
+  // std::string tcp_buffer_ {};
+  std::map<uint64_t, TCPSenderMessage> tcp_buffer_ {};
+  bool FIN_sent {};
+  void send_msg_with( uint16_t msg_length, bool is_resent, uint64_t abs_sqeno, const TransmitFunction& transmit );
 };
