@@ -17,8 +17,8 @@ class Timer
 {
 public:
   explicit Timer( uint64_t RTO_ms ) : RTO_ms_( RTO_ms ) {}
-  void start();
-  void stop();
+  void start() { expire_timestamp_ = current_timestamp_ + RTO_ms_; }
+  void stop() { expire_timestamp_ = UINT64_MAX; }
   void set_RTO( uint64_t RTO_ms ) { RTO_ms_ = RTO_ms; }
   void double_RTO() { RTO_ms_ *= 2; }
   bool expire_with_time_goes( uint64_t time_ms );

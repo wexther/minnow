@@ -29,13 +29,13 @@ void TCPSender::push( const TransmitFunction& transmit )
   if ( swnd_ == 0 && not_acked_size == 0 ) {
     send_msg_with( 1, next_seq_, transmit );
   } else {
-    while ( not_acked_size < swnd_
-            && ( !input_.reader().peek().empty() || ( input_.reader().is_finished() && !FIN_sent ) ) ) {
+    while ( not_acked_size < swnd_ && !input_.reader().peek().empty() ) {
       send_msg_with( swnd_ - not_acked_size, next_seq_, transmit );
       not_acked_size = next_seq_ - acked_no_;
     }
-    if (  not_acked_size < swnd_ && input_.reader().peek().empty() &&(next_seq_ == 0 || ( input_.reader().is_finished() && !FIN_sent ))) {
-      send_msg_with( 1, 0, transmit );
+    if ( not_acked_size < swnd_ && input_.reader().peek().empty()
+         && ( next_seq_ == 0 || ( input_.reader().is_finished() && !FIN_sent ) ) ) {
+      send_msg_with( swnd_ - not_acked_size, next_seq_, transmit );
     }
   }
 }
@@ -66,19 +66,14 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 
       consecutive_retransmissions_ = 0;
       tcp_buffer_.erase( tcp_buffer_.begin(), it );
-
     } else if ( new_acked_no_ == next_seq_ ) {
-      // cout << "find nothing!" << endl;
       acked_no_ = new_acked_no_;
 
       timer_.set_RTO( initial_RTO_ms_ );
       timer_.stop();
 
       consecutive_retransmissions_ = 0;
-
-      // map<uint64_t, TCPSenderMessage>::iterator it = tcp_buffer_.upper_bound( acked_no_ );
       tcp_buffer_.erase( tcp_buffer_.begin(), it );
-      // cout << "sure empty" << tcp_buffer_.empty() << endl;
     }
   }
   swnd_ = msg.window_size;
@@ -95,7 +90,6 @@ void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& trans
   // (void)initial_RTO_ms_;
 
   if ( timer_.expire_with_time_goes( ms_since_last_tick ) ) {
-    // send_msg_with( next_seq_ - acked_no_, true, acked_no_, transmit );
     transmit( tcp_buffer_[acked_no_] );
     if ( swnd_ != 0 ) {
       ++consecutive_retransmissions_;
@@ -125,40 +119,20 @@ void TCPSender::send_msg_with( uint16_t msg_max_length, uint64_t abs_sqeno, cons
   if ( msg_length < msg_max_length - msg.SYN && reader.is_finished() && !FIN_sent ) {
     msg.FIN = true;
     FIN_sent = true;
-    // cout << "send fin with " << msg.payload << endl;
   }
   msg.RST = input_.has_error();
 
-  tcp_buffer_[abs_sqeno] = msg;
-  // cout << "addbuffer" << abs_sqeno << ' ' << endl;
-  // tcp_buffer_.append( msg.payload );
-  next_seq_ += msg.sequence_length();
-  // cout << "send to  " << next_seq_ << endl;
-
   transmit( msg );
 
+  tcp_buffer_[abs_sqeno] = msg;
+  next_seq_ += msg.sequence_length();
   if ( !timer_.is_running() ) {
     timer_.start();
   }
 }
 
-void Timer::start()
-{
-  expire_timestamp_ = current_timestamp_ + RTO_ms_;
-  // cout << "timestaert" << endl;
-  // is_running_ = true;
-}
-
-void Timer::stop()
-{
-  expire_timestamp_ = UINT64_MAX;
-  // cout << "timestop!"<<endl;
-  // is_running_ = false;
-}
-
 bool Timer::expire_with_time_goes( uint64_t time_ms )
 {
   current_timestamp_ += time_ms;
-  // cout << "time" << current_timestamp_ << "due" << expire_timestamp_ << endl;
   return current_timestamp_ >= expire_timestamp_;
 }
