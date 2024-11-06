@@ -27,15 +27,15 @@ void TCPSender::push( const TransmitFunction& transmit )
   uint16_t not_acked_size = next_seq_ - acked_no_;
 
   if ( swnd_ == 0 && not_acked_size == 0 ) {
-    send_msg_with( 1,  next_seq_, transmit );
+    send_msg_with( 1, next_seq_, transmit );
   } else {
     while ( not_acked_size < swnd_
             && ( !input_.reader().peek().empty() || ( input_.reader().is_finished() && !FIN_sent ) ) ) {
-      send_msg_with( swnd_ - not_acked_size,  next_seq_, transmit );
+      send_msg_with( swnd_ - not_acked_size, next_seq_, transmit );
       not_acked_size = next_seq_ - acked_no_;
     }
-    if ( next_seq_ == 0 && input_.reader().peek().empty() ) {
-      send_msg_with( 1,  0, transmit );
+    if (  not_acked_size < swnd_ && input_.reader().peek().empty() &&(next_seq_ == 0 || ( input_.reader().is_finished() && !FIN_sent ))) {
+      send_msg_with( 1, 0, transmit );
     }
   }
 }
@@ -62,13 +62,11 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
       timer_.set_RTO( initial_RTO_ms_ );
       if ( it != tcp_buffer_.begin() ) {
         timer_.start();
-        // cout << "timer start with new ack" << new_acked_no_;
       }
 
       consecutive_retransmissions_ = 0;
-
-      // map<uint64_t, TCPSenderMessage>::iterator it = tcp_buffer_.upper_bound( acked_no_ );
       tcp_buffer_.erase( tcp_buffer_.begin(), it );
+
     } else if ( new_acked_no_ == next_seq_ ) {
       // cout << "find nothing!" << endl;
       acked_no_ = new_acked_no_;
@@ -108,9 +106,7 @@ void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& trans
 }
 
 // my addition
-void TCPSender::send_msg_with( uint16_t msg_max_length,
-                               uint64_t abs_sqeno,
-                               const TransmitFunction& transmit )
+void TCPSender::send_msg_with( uint16_t msg_max_length, uint64_t abs_sqeno, const TransmitFunction& transmit )
 {
   TCPSenderMessage msg;
 
