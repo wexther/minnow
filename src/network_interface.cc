@@ -84,8 +84,9 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
         }
       }
       time_expire_list_.emplace_back( cur_time_stamp_ + 30000, map_it );
+
       auto pending_it_range = pending_datagram_.equal_range( arp.sender_ip_address );
-      for ( auto pending_it = pending_it_range.first; pending_it!= pending_it_range.second; ++pending_it ) {
+      for ( auto pending_it = pending_it_range.first; pending_it != pending_it_range.second; ++pending_it ) {
         transmit( EthernetFrame {
           EthernetHeader { arp.sender_ethernet_address, ethernet_address_, EthernetHeader::TYPE_IPv4 },
           serialize( pending_it->second ) } );

@@ -51,7 +51,7 @@ int main()
   for ( int i = 414; i <= 779; i++ ) {
     c << i << "," << rttdis[i] << endl;
   }
-  
+
   c.close();
   file.close();
   return 0;
