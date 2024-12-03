@@ -40,7 +40,7 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
       request.opcode = ARPMessage::OPCODE_REQUEST;
       request.sender_ethernet_address = ethernet_address_;
       request.sender_ip_address = ip_address_.ipv4_numeric();
-      request.target_ethernet_address = ETHERNET_BROADCAST;
+      request.target_ethernet_address = EthernetAddress { 0, 0, 0, 0, 0, 0 };
       request.target_ip_address = ip;
 
       transmit( EthernetFrame { EthernetHeader { ETHERNET_BROADCAST, ethernet_address_, EthernetHeader::TYPE_ARP },
@@ -84,6 +84,13 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
         }
       }
       time_expire_list_.emplace_back( cur_time_stamp_ + 30000, map_it );
+      auto pending_it_range = pending_datagram_.equal_range( arp.sender_ip_address );
+      for ( auto pending_it = pending_it_range.first; pending_it!= pending_it_range.second; ++pending_it ) {
+        transmit( EthernetFrame {
+          EthernetHeader { arp.sender_ethernet_address, ethernet_address_, EthernetHeader::TYPE_IPv4 },
+          serialize( pending_it->second ) } );
+      }
+      pending_datagram_.erase( pending_it_range.first, pending_it_range.second );
 
       if ( arp.opcode == ARPMessage::OPCODE_REQUEST ) {
         if ( arp.target_ip_address == ip_address_.ipv4_numeric() ) {
@@ -94,9 +101,9 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
           reply.target_ethernet_address = arp.sender_ethernet_address;
           reply.target_ip_address = arp.sender_ip_address;
 
-          transmit( EthernetFrame { EthernetHeader { arp.sender_ethernet_address, ethernet_address_,
-                                                        EthernetHeader::TYPE_ARP },
-                                serialize( reply ) } );
+          transmit( EthernetFrame {
+            EthernetHeader { arp.sender_ethernet_address, ethernet_address_, EthernetHeader::TYPE_ARP },
+            serialize( reply ) } );
         }
       }
     }
@@ -110,7 +117,7 @@ void NetworkInterface::tick( const size_t ms_since_last_tick )
   // (void)ms_since_last_tick;
 
   cur_time_stamp_ += ms_since_last_tick;
-  while (!time_expire_list_.empty() && time_expire_list_.front().first < cur_time_stamp_ ) {
+  while ( !time_expire_list_.empty() && time_expire_list_.front().first < cur_time_stamp_ ) {
     ip_map_.erase( time_expire_list_.front().second );
     time_expire_list_.pop_front();
   }
