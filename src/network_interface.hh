@@ -9,7 +9,7 @@
 #include "ethernet_frame.hh"
 #include "ipv4_datagram.hh"
 
-using TimeStamp_t = uint64_t;
+using TimeStamp_t = size_t;
 
 // A "network interface" that connects IP (the internet layer, or network layer)
 // with Ethernet (the network access layer, or link layer).
