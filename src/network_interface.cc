@@ -75,6 +75,7 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
       auto map_it = ip_map_.find( arp.sender_ip_address );
       if ( map_it == ip_map_.end() ) {
         map_it = ip_map_.emplace( arp.sender_ip_address, arp.sender_ethernet_address ).first;
+        request_timeout_map_.erase( arp.sender_ip_address );
       } else {
         for ( auto list_it = time_expire_list_.begin(); list_it != time_expire_list_.end(); ++list_it ) {
           if ( list_it->second == map_it ) {
