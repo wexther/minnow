@@ -90,6 +90,6 @@ private:
   std::map<uint32_t, EthernetAddress> ip_map_ {};
   std::list<std::pair<TimeStamp_t, std::map<uint32_t, EthernetAddress>::iterator>> time_expire_list_ {};
   std::unordered_multimap<uint32_t, InternetDatagram> pending_datagram_ {};
-  std::map<uint32_t, TimeStamp_t> request_timeout_map_ {};
+  std::unordered_map<uint32_t, TimeStamp_t> request_timeout_map_ {};
   TimeStamp_t cur_time_stamp_ {};
 };
