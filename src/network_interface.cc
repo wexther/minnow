@@ -43,12 +43,14 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
       request.target_ethernet_address = EthernetAddress { 0, 0, 0, 0, 0, 0 };
       request.target_ip_address = ip;
 
+      pending_datagram_.emplace( ip, dgram );
       transmit( EthernetFrame { EthernetHeader { ETHERNET_BROADCAST, ethernet_address_, EthernetHeader::TYPE_ARP },
                                 serialize( request ) } );
 
       request_timeout_map_[ip] = cur_time_stamp_ + 5000;
+    } else {
+      pending_datagram_.emplace( ip, dgram );
     }
-    pending_datagram_.emplace( ip, dgram );
   } else {
     transmit( EthernetFrame { EthernetHeader { map_it->second, ethernet_address_, EthernetHeader::TYPE_IPv4 },
                               serialize( dgram ) } );
