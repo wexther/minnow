@@ -41,7 +41,7 @@ struct RouterPre
 class RouterMapped
 {
 public:
-  explicit RouterMapped( size_t interface_num = {},
+  explicit RouterMapped( size_t interface_num = -1,
                          const std::optional<Address>& next_hop = {},
                          const std::map<RouterPre, RouterMapped, std::less<>>&& children = {} )
     : interface_num_( interface_num ), next_hop_( next_hop ), children_( std::move( children ) )
@@ -52,9 +52,9 @@ public:
   size_t interface_num() { return interface_num_; }
 
 protected:
-  size_t interface_num_ {};
-  std::optional<Address> next_hop_ {};
-  std::map<RouterPre, RouterMapped, std::less<>> children_ {};
+  size_t interface_num_;
+  std::optional<Address> next_hop_;
+  std::map<RouterPre, RouterMapped, std::less<>> children_;
 };
 
 //! \brief A router that has multiple network interfaces and

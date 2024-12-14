@@ -93,7 +93,7 @@ void Router::route()
       }
       auto dest { find( RouterPre( gram.header.dst, 32 ) ) };
 
-      if ( !dest || --gram.header.ttl == 0 ) {
+      if ( !dest || --gram.header.ttl == 0 || dest.value().interface_num() == -1UL ) {
         datagrams.pop();
         continue;
       }
